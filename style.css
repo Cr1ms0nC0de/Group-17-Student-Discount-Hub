@@ -1,0 +1,126 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+}
+
+header {
+  background-color: #004aad;
+  color: white;
+  padding: 1em 0;
+  text-align: center;
+}
+
+nav ul {
+  list-style: none;
+  padding: 0;
+}
+
+nav ul li {
+  display: inline;
+  margin: 0 15px;
+}
+
+nav ul li a {
+  color: white;
+  text-decoration: none;
+}
+
+section {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+footer {
+  background-color: #f1f1f1;
+  text-align: center;
+  padding: 10px;
+  margin-top: 40px;
+}
+
+/* ===== Discount Cards ===== */
+
+.discount-card {
+  background: #fff;
+  padding: 16px;
+  margin: 15px 0;
+  border-radius: 10px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+  transition: transform 0.15s ease;
+}
+
+.discount-card:hover {
+  transform: translateY(-3px);
+}
+
+.discount-card h3 {
+  margin-top: 0;
+  color: #004aad;
+}
+
+.description {
+  margin: 8px 0;
+}
+
+.meta {
+  font-size: 0.9em;
+  color: #555;
+  line-height: 1.4;
+}
+
+.status {
+  font-weight: bold;
+}
+
+.status.active {
+  color: #2ecc71;
+}
+
+.status.expired {
+  color: #c0392b;
+}
+
+.tags {
+  margin-top: 8px;
+}
+
+.tag {
+  background: #e6efff;
+  color: #004aad;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.8em;
+  margin-right: 5px;
+}
+
+.offer-link a {
+  display: inline-block;
+  margin-top: 10px;
+  text-decoration: none;
+  background: #004aad;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.offer-link a:hover {
+  background: #003180;
+}
+
+.discount-card.expired {
+  opacity: 0.6;
+}
+
+.placeholder {
+  text-align: center;
+  color: #888;
+  font-style: italic;
+}
+
+.error {
+  color: #c0392b;
+  font-weight: bold;
+}

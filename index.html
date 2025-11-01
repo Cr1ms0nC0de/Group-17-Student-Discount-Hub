@@ -1,54 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Discount Hub</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Discount Hub</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Header -->
-  <header>
+<!-- Header -->
+<header>
     <h1>Student Discount Hub</h1>
     <nav>
-      <ul>
-        <li><a href="#home">Home</a></li>
-        <li><a href="#discounts">Discounts</a></li>
-        <li><a href="#submit">Submit Discount</a></li>
-      </ul>
+        <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#discounts">Discounts</a></li>
+            <li><a href="#submit">Submit Discount</a></li>
+        </ul>
     </nav>
-  </header>
+</header>
 
-  <!-- Main Content -->
-  <main>
+<!-- Main Content -->
+<main>
     <!-- Intro / Hero Section -->
     <section id="home" class="hero">
-      <h2>Welcome!</h2>
-      <p>Your one-stop spot for student discounts shared by students.</p>
+        <h2>Welcome!</h2>
+        <p>Your one-stop spot for student discounts shared by students.</p>
     </section>
 
     <!-- Discount List Section -->
     <section id="discounts" class="discount-section">
-      <h2>Available Discounts</h2>
-      <div id="discount-list">
-        <!-- JS will inject discount cards here later -->
-        <p class="placeholder">Discount listings will appear here once connected to the database.</p>
-      </div>
+        <h2>Available Discounts</h2>
+        <div id="discount-list">
+            <!-- JS will inject discount cards here later -->
+            <p class="placeholder">Discount listings will appear here once connected to the database.</p>
+        </div>
     </section>
 
     <!-- Submit Discount Section -->
     <section id="submit" class="submit-section">
-      <h2>Submit a Discount</h2>
-      <!-- Placeholder for Airtable embed or custom form -->
-      <p class="placeholder">Form coming soon...</p>
+        <h2>Submit a Discount</h2>
+        <!-- Placeholder for Airtable embed or custom form -->
+        <p class="placeholder">Click the button below to submit a discount</p>
+        <button id="show-form-btn" class="btn-submit">Submit a Discount</button>
     </section>
-  </main>
+</main>
 
-  <!-- Footer -->
-  <footer>
+<!-- Modal Form (Hidden by default) -->
+<div id="form-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2>Submit a Discount</h2>
+
+        <!-- Success Message -->
+        <div class="success-message" id="success-message">
+            ✓ Discount saved locally! Check console for details.
+        </div>
+
+        <!-- Discount Submission Form -->
+        <form id="add-form" class="discount-form">
+            <div class="form-group">
+                <label for="title">Discount Title *</label>
+                <input type="text" id="title" name="title" required placeholder="e.g., 50% off Pizza Hut">
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description *</label>
+                <textarea id="description" name="description" required placeholder="Describe the discount and how to use it..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="url">Website URL</label>
+                <input type="url" id="url" name="url" required placeholder="https://example.com/student-discount">
+            </div>
+
+            <div class="form-group">
+                <label for="category">Category</label>
+                <select id="category" name="category" required>
+                    <option value="Tech">Tech</option>
+                    <option value="Food">Food</option>
+                    <option value="Music">Music</option>
+                    <option value="Games">Games</option>
+                    <option value="Entertainment">Entertainment</option>
+                    <option value="Household">Household</option>
+                    <option value="Learning">Learning</option>
+                    <option value="Fitness">Fitness</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="tags">Tags (comma separated)</label>
+                <input type="text" id="tags" name="tags" required placeholder="pizza, delivery, food">
+            </div>
+
+            <div class="form-group checkbox-group">
+                <input type="checkbox" id="student-only" name="student-only">
+                <label for="student-only">Requires Student ID/Email</label>
+            </div>
+
+            <button type="submit" class="btn-submit">Submit Discount</button>
+        </form>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer>
     <p>&copy; 2025 Student Discount Hub | Built by Students, for Students</p>
-  </footer>
+</footer>
 
-  <script src="app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>

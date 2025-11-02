@@ -39,7 +39,6 @@
     <!-- Submit Discount Section -->
     <section id="submit" class="submit-section">
         <h2>Submit a Discount</h2>
-        <!-- Placeholder for Airtable embed or custom form -->
         <p class="placeholder">Click the button below to submit a discount</p>
         <button id="show-form-btn" class="btn-submit">Submit a Discount</button>
     </section>
@@ -69,12 +68,12 @@
             </div>
 
             <div class="form-group">
-                <label for="url">Website URL</label>
+                <label for="url">Website URL *</label>
                 <input type="url" id="url" name="url" required placeholder="https://example.com/student-discount">
             </div>
 
             <div class="form-group">
-                <label for="category">Category</label>
+                <label for="category">Category *</label>
                 <select id="category" name="category" required>
                     <option value="Tech">Tech</option>
                     <option value="Food">Food</option>
@@ -88,13 +87,18 @@
             </div>
 
             <div class="form-group">
-                <label for="tags">Tags (comma separated)</label>
+                <label for="tags">Tags (comma separated) *</label>
                 <input type="text" id="tags" name="tags" required placeholder="pizza, delivery, food">
+            </div>
+
+            <div class="form-group">
+                <label for="expires-at">Expires At *</label>
+                <input type="date" id="expires-at" name="expires-at" required>
             </div>
 
             <div class="form-group checkbox-group">
                 <input type="checkbox" id="student-only" name="student-only">
-                <label for="student-only">Requires Student ID/Email</label>
+                <label for="student-only">Requires Student ID/Email *</label>
             </div>
 
             <button type="submit" class="btn-submit">Submit Discount</button>

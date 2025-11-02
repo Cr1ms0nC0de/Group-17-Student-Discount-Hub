@@ -76,7 +76,7 @@ async function loadDiscounts() {
         }
 
         const data = await res.json();
-        const validRecords = data.records.filter(r => r.fields.Title && r.fields.Title.trim() !== "");
+        const validRecords = data.records.filter(r => r.fields.Title && r.fields.Title.trim() !== "" && r.fields.Approved === true && r.fields["Current Status"] !== "Expired");
         displayDiscounts(validRecords);
     } catch (error) {
         console.error("Error fetching data:", error);
@@ -97,7 +97,7 @@ function showSuccess(message){
 }
 
 //add a new discount to Airtable
-async function addDiscount(title, description, url, category, tags){
+async function addDiscount(title, description, url, category, tags, studentOnly, expiresAt){
     console.log("Attempting to send new Discount to Airtable:", {title, description});
     try{
         const fields={
@@ -105,7 +105,9 @@ async function addDiscount(title, description, url, category, tags){
             Description: description,
             URL: url,
             Category: category,
-            Tags: tags
+            Tags: tags,
+            "Student Only": studentOnly,
+            "Expires At": expiresAt
 
         };
         console.log("Sending these fields:", fields);
@@ -174,9 +176,11 @@ document.addEventListener("DOMContentLoaded", function(){
             const url = document.getElementById("url").value.trim();
             const category = document.getElementById("category").value;
             const tags = document.getElementById("tags").value.trim();
+            const studentOnly = document.getElementById("student-only").checked;
+            const expiresAt = document.getElementById("expires-at").value;
 
             //simple validation
-            if(!title || !description || !url || !category || !tags){
+            if(!title || !description || !url || !category || !tags || !expiresAt){
                 alert("Please fill in all fields");
                 return;
             }
@@ -191,7 +195,7 @@ document.addEventListener("DOMContentLoaded", function(){
             try{
                 //send discount to airtable
                 console.log("Sending to Airtable");
-                await addDiscount(title, description, url, category, tags);
+                await addDiscount(title, description, url, category, tags, studentOnly, expiresAt);
 
                 showSuccess("Discount submitted successfully");
                 form.reset();

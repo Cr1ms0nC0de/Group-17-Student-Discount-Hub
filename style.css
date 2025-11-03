@@ -95,11 +95,12 @@ footer {
   margin-right: 5px;
 }
 
+/* View Offer button — GREEN */
 .offer-link a {
   display: inline-block;
   margin-top: 10px;
   text-decoration: none;
-  background: #004aad;
+  background: #28a745;        /* was #004aad */
   color: #fff;
   padding: 6px 12px;
   border-radius: 6px;
@@ -107,7 +108,7 @@ footer {
 }
 
 .offer-link a:hover {
-  background: #003180;
+  background: #1e7e34;        /* was #003180 */
 }
 
 .discount-card.expired {

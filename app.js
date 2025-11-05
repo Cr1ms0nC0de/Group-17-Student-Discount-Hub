@@ -18,6 +18,9 @@ function showLoading() {
 function showError(message) {
     const container = document.getElementById("discount-list");
     container.innerHTML = `<p class='placeholder error'>⚠️ ${message}</p>`;
+    if(window.showToast){
+        window.showToast("error", "Failed to load", message);
+    }
 }
 
 // Display all discount cards on the page
@@ -38,7 +41,7 @@ function displayDiscounts(records) {
         const url = d.URL ? `<a href="${d.URL}" target="_blank">View Offer</a>` : "";
         const category = d.Category || "General";
         const tags = d.Tags ? d.Tags.split(",").map(t => `<span class="tag">${t.trim()}</span>`).join(" ") : "";
-        const studentOnly = d["Student Only"] ? "Student Only: True" : "Student Only: False";
+        const studentOnly = d["Student Only"] ? "Student Only" : "Available to Everyone";
         const status = d["Current Status"] || "Unknown";
         const expiresAt = d["Expires At"] || "N/A";
         const daysLeft = d["Days Until Expiration"] !== undefined ? `${d["Days Until Expiration"]} days left` : "";
@@ -60,6 +63,20 @@ function displayDiscounts(records) {
     `;
         container.appendChild(card);
     });
+    // === ABDUL: wire up the detail popup AFTER cards exist in the DOM ===
+    try {
+        const cards = Array.from(container.querySelectorAll(".discount-card"));
+        if (window.attachDetailHandlers && cards.length) {
+            // Pass the same records array we just rendered
+            window.attachDetailHandlers(cards, records);
+        }
+        // Optional toast (only if helper exists)
+        if (window.showToast) {
+            window.showToast("success", "Loaded", "Discounts updated.");
+        }
+    } catch (e) {
+        console.warn("ABDUL: detail view not wired:", e);
+    }
 }
 
 // Load data from Airtable

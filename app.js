@@ -315,13 +315,13 @@ document.addEventListener("DOMContentLoaded", function(){
 });
 //session functions
 function setCurrentUser(username){
-    sessionStorage.setItem("currentUser", username);
+    localStorage.setItem("currentUser", username);
 }
 function getCurrentUser(){
-    return sessionStorage.getItem("currentUser");
+    return localStorage.getItem("currentUser");
 }
 function clearCurrentUser(){
-    sessionStorage.removeItem("currentUser");
+    localStorage.removeItem("currentUser");
 }
 function isLoggedIn(){
     return getCurrentUser() !== null;

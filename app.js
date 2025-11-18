@@ -2,9 +2,11 @@
 
 const AIRTABLE_BASE = "appIR5VPGJzHN9U9a"; // base ID
 const TABLE_NAME = "Discounts"; // table name
+const USER_TABLE = "Users"; //user table
 const TOKEN = "patId6xLH6x0hv8hV.47242219be5e1e440c32407a55882f7a82009be491905c3eba3d284c0819915c" // personal access token
 
 const API_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${encodeURIComponent(TABLE_NAME)}`;
+const USER_API_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${encodeURIComponent(USER_TABLE)}`;
 
 // ======== FUNCTIONS ========
 
@@ -117,6 +119,7 @@ function showSuccess(message){
 async function addDiscount(title, description, url, category, tags, studentOnly, expiresAt){
     console.log("Attempting to send new Discount to Airtable:", {title, description});
     try{
+        const currentUser = getCurrentUser();
         const fields={
             Title: title,
             Description: description,
@@ -124,8 +127,8 @@ async function addDiscount(title, description, url, category, tags, studentOnly,
             Category: category,
             Tags: tags,
             "Student Only": studentOnly,
-            "Expires At": expiresAt
-
+            "Expires At": expiresAt,
+            "Added By": currentUser
         };
         console.log("Sending these fields:", fields);
 
@@ -237,7 +240,175 @@ document.addEventListener("DOMContentLoaded", function(){
             }
         });
     }
-});
+    //Login stuff
+    updateAuthUI();
 
+    //handlers
+    const loginForm = document.getElementById("login-form");
+    const registerForm = document.getElementById("register-form");
+    const showRegisterButton = document.getElementById("show-register");
+    const showLoginButton = document.getElementById("show-login");
+    const logoutButton = document.getElementById("logout-btn");
+
+    if(showRegisterButton){
+        showRegisterButton.addEventListener("click", function(){
+            document.getElementById("login-box").style.display = "none";
+            document.getElementById("register-box").style.display = "block";
+        });
+    }
+    if(showLoginButton){
+        showLoginButton.addEventListener("click", function(){
+            document.getElementById("register-box").style.display = "none";
+            document.getElementById("login-box").style.display = "block";
+        });
+    }
+    if(loginForm){
+        loginForm.addEventListener("submit", async(event)=>{
+            event.preventDefault();
+            const username = document.getElementById("login-username").value.trim();
+            const password = document.getElementById("login-password").value.trim();
+
+            if(!username || !password){
+                alert("Please fill in all fields");
+                return;
+            }
+
+            try{
+                await loginUser(username, password);
+                setCurrentUser(username);
+                alert("Login successful");
+                updateAuthUI();
+                loginForm.reset();
+            }catch(error){
+                alert(error.message);
+            }
+        });
+    }
+    if(registerForm){
+        registerForm.addEventListener("submit", async(event)=>{
+            event.preventDefault();
+            const username = document.getElementById("register-username").value.trim();
+            const password = document.getElementById("register-password").value.trim();
+
+            if(!username || !password){
+                alert("Please fill in all fields");
+                return;
+            }
+            try{
+                await registerUser(username, password);
+                alert("Registration successful! Please login.");
+                document.getElementById("register-box").style.display = "none";
+                document.getElementById("login-box").style.display = "block";
+                registerForm.reset();
+            }catch(error){
+                alert(error.message);
+            }
+        });
+    }
+    if(logoutButton){
+        logoutButton.addEventListener("click", function(){
+            clearCurrentUser();
+            alert("Logged out successfully");
+            updateAuthUI();
+        });
+    }
+});
+//session functions
+function setCurrentUser(username){
+    sessionStorage.setItem("currentUser", username);
+}
+function getCurrentUser(){
+    return sessionStorage.getItem("currentUser");
+}
+function clearCurrentUser(){
+    sessionStorage.removeItem("currentUser");
+}
+function isLoggedIn(){
+    return getCurrentUser() !== null;
+}
+//user login functions
+async function registerUser(username, password){
+    try{
+        //check if user already exists
+        const checkUser = await fetch(`${USER_API_URL}?filterByFormula={Username}='${username}'`, {headers: {Authorization: `Bearer ${TOKEN}`}});
+        if(!checkUser.ok){
+            throw new Error("Failed to check existing users");
+        }
+
+        const checkData = await checkUser.json();
+
+        if(checkData.records.length > 0){
+            throw new Error("Username already exists");
+        }
+
+        const fields ={
+            Username: username,
+            Password: password
+        };
+
+        const response = await fetch(USER_API_URL,{
+            method: "POST",
+            headers:{
+                Authorization: `Bearer ${TOKEN}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({fields})
+        });
+        if(!response.ok){
+            throw new Error("Failed to register");
+        }
+        const data = await response.json();
+        console.log("User registered:", data);
+        return data;
+    }catch(error){
+        console.error("Error in registerUser:", error);
+        throw error;
+    }
+}
+async function loginUser(username, password){
+    try{
+        const checkUser = await fetch(`${USER_API_URL}?filterByFormula={Username}='${username}'`, {headers: {Authorization: `Bearer ${TOKEN}`}});
+        const data = await checkUser.json();
+
+        //check if username exists
+        if(data.records.length === 0){
+            throw new Error("Username not found");
+        }
+
+        //check if password is correct
+        if(data.records[0].fields.Password !== password){
+            throw new Error("Wrong password");
+        }
+        return data.records[0];
+    }catch(error){
+        console.error("Error in loginUser:", error);
+        throw error;
+    }
+}
+//update UI
+function updateAuthUI(){
+    const authSection = document.getElementById("auth-section");
+    const submitButton = document.getElementById("show-form-btn");
+    const logoutButton = document.getElementById("logout-btn");
+
+    if(isLoggedIn()){
+        authSection.style.display = "none";
+        if(submitButton){
+            submitButton.style.display = "inline-block";
+        }
+        if(logoutButton){
+            logoutButton.style.display = "inline-block";
+            logoutButton.textContent = `Logout (${getCurrentUser()})`;
+        }
+    }else{
+        authSection.style.display = "block";
+        if(submitButton){
+            submitButton.style.display = "none";
+        }
+        if(logoutButton){
+            logoutButton.style.display = "none";
+        }
+    }
+}
 // ======== INIT ========
 loadDiscounts();

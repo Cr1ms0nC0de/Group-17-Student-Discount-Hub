@@ -51,6 +51,41 @@
         <p>Your one-stop spot for student discounts shared by students.</p>
     </section>
 
+    <!-- Auth Section -->
+    <section id="auth-section" class="auth-section">
+        <div id="login-box" class="auth-box">
+            <h2>Login</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-username">Username</label>
+                    <input type="text" id="login-username" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required>
+                </div>
+                <button type="submit" class="btn-submit">Login</button>
+                <p class="auth-switch">Don't have an account? <a href="#" id="show-register">Register</a></p>
+            </form>
+        </div>
+
+        <div id="register-box" class="auth-box" style="display: none;">
+            <h2>Register</h2>
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="register-username">Username</label>
+                    <input type="text" id="register-username" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-password">Password</label>
+                    <input type="password" id="register-password" required>
+                </div>
+                <button type="submit" class="btn-submit">Register</button>
+                <p class="auth-switch">Already have an account? <a href="#" id="show-login">Login</a></p>
+            </form>
+        </div>
+    </section>
+
     <!-- Discount List Section -->
     <section id="discounts" class="discount-section">
         <h2>Available Discounts</h2>
@@ -63,8 +98,9 @@
     <!-- Submit Discount Section -->
     <section id="submit" class="submit-section">
         <h2>Submit a Discount</h2>
-        <p class="placeholder">Click the button below to submit a discount</p>
+        <p class="placeholder">Click the button below to submit a discount (It only appears if logged in)</p>
         <button id="show-form-btn" class="btn-submit">Submit a Discount</button>
+        <button id="logout-btn" class="btn-submit" style="display: none; background: #dc3545; margin-left: 10px;">Logout</button>
     </section>
 </main>
 

@@ -275,6 +275,44 @@ footer {
     margin-top: 10px;
 }
 
+/* ===== Auth Section ===== */
+
+.auth-section {
+    max-width: 400px;
+    margin: 20px auto;
+    padding: 20px;
+}
+
+.auth-box {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+.auth-box h2 {
+    text-align: center;
+    color: #004aad;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.auth-switch {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 0.9em;
+}
+
+.auth-switch a {
+    color: #004aad;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.auth-switch a:hover {
+    text-decoration: underline;
+}
+
 /* ===== Responsive Design ===== */
 
 @media (max-width: 768px) {

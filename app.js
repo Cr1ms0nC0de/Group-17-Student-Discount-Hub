@@ -8,6 +8,7 @@ const TOKEN = "patId6xLH6x0hv8hV.47242219be5e1e440c32407a55882f7a82009be491905c3
 const API_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${encodeURIComponent(TABLE_NAME)}`;
 const USER_API_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${encodeURIComponent(USER_TABLE)}`;
 
+let cachedRecords = [];
 // ======== FUNCTIONS ========
 
 // Show a temporary loading message
@@ -47,9 +48,21 @@ function displayDiscounts(records) {
         const status = d["Current Status"] || "Unknown";
         const expiresAt = d["Expires At"] || "N/A";
         const daysLeft = d["Days Until Expiration"] !== undefined ? `${d["Days Until Expiration"]} days left` : "";
+        const addedBy = d["Added By"] || "";
 
         const card = document.createElement("div");
         card.className = `discount-card ${status.toLowerCase()}`;
+        card.dataset.recordId = record.id;
+        card.dataset.recordData = JSON.stringify(record.fields);
+
+        const currentUser = getCurrentUser();
+        const canModify = currentUser && (currentUser === addedBy || currentUser === "admin");
+        const editDeleteButtons = canModify ? `
+            <div class="card-actions">
+                <button class="btn-edit" onclick="editDiscount('${record.id}')">Edit</button>
+                <button class="btn-delete" onclick="deleteDiscount('${record.id}', '${title.replace(/'/g, "\\'")}')">Delete</button>
+            </div>
+        ` : "";
 
         card.innerHTML = `
       <h3>${title}</h3>
@@ -62,23 +75,27 @@ function displayDiscounts(records) {
       </p>
       <div class="tags">${tags}</div>
       <p class="offer-link">${url}</p>
+      ${editDeleteButtons}
     `;
         container.appendChild(card);
     });
     // === ABDUL: wire up the detail popup AFTER cards exist in the DOM ===
-    try {
-        const cards = Array.from(container.querySelectorAll(".discount-card"));
-        if (window.attachDetailHandlers && cards.length) {
-            // Pass the same records array we just rendered
-            window.attachDetailHandlers(cards, records);
-        }
-        // Optional toast (only if helper exists)
-        if (window.showToast) {
-            window.showToast("success", "Loaded", "Discounts updated.");
-        }
-    } catch (e) {
-        console.warn("ABDUL: detail view not wired:", e);
-    }
+
+    //commented out for now due to it not being neccessary in its current form, it shows exact same info as discount display but without the clean ui.
+
+    // try {
+    //     const cards = Array.from(container.querySelectorAll(".discount-card"));
+    //     if (window.attachDetailHandlers && cards.length) {
+    //         // Pass the same records array we just rendered
+    //         window.attachDetailHandlers(cards, records);
+    //     }
+    //     // Optional toast (only if helper exists)
+    //     if (window.showToast) {
+    //         window.showToast("success", "Loaded", "Discounts updated.");
+    //     }
+    // } catch (e) {
+    //     console.warn("ABDUL: detail view not wired:", e);
+    // }
 }
 
 // Load data from Airtable
@@ -96,11 +113,22 @@ async function loadDiscounts() {
 
         const data = await res.json();
         const validRecords = data.records.filter(r => r.fields.Title && r.fields.Title.trim() !== "" && r.fields.Approved === true && r.fields["Current Status"] !== "Expired");
+        cachedRecords = validRecords; //store discounts in memory
         displayDiscounts(validRecords);
     } catch (error) {
         console.error("Error fetching data:", error);
         showError("Failed to load discounts. Please try again later.");
+    }finally{
+        //hide loading spinner, was causing issues when loaded multiple times.
+        if(window.hideLoading){
+            window.hideLoading();
+        }
     }
+}
+
+//refresh discounts without calling api
+function refreshDisplay(){
+    displayDiscounts(cachedRecords);
 }
 
 //show the success message
@@ -157,6 +185,127 @@ async function addDiscount(title, description, url, category, tags, studentOnly,
     }
 }
 
+//update existing discount
+async function updateDiscount(recordId, title, description, url, category, tags, studentOnly, expiresAt){
+    console.log("Attempting to update discount:", recordId);
+    try{
+        const fields={
+            Title: title,
+            Description: description,
+            URL: url,
+            Category: category,
+            Tags: tags,
+            "Student Only": studentOnly,
+            "Expires At": expiresAt,
+            "Approved": false
+        };
+
+        const response = await fetch(`${API_URL}/${recordId}`,{
+            method: "PATCH",
+            headers:{
+                Authorization: `Bearer ${TOKEN}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({fields})
+        });
+
+        if(!response.ok){
+            const errorText = await response.text();
+            console.error("Update error:", errorText);
+            throw new Error("Failed to update discount");
+        }
+
+        const data = await response.json();
+        console.log("Successfully updated discount:", data);
+
+        //remove from cache
+        cachedRecords = cachedRecords.filter(r => r.id !== recordId);
+
+        return data;
+    }catch(error){
+        console.error("Error in updateDiscount:", error);
+        throw error;
+    }
+}
+
+//delete discount
+async function removeDiscount(recordId){
+    console.log("Attempting to delete discount:", recordId);
+    try{
+        const response = await fetch(`${API_URL}/${recordId}`,{
+            method: "DELETE",
+            headers:{
+                Authorization: `Bearer ${TOKEN}`
+            }
+        });
+        //Set Approved to false instead of deleting
+
+        // const fields ={
+        //     "Approved": false
+        // };
+        //
+        // const response = await fetch(`${API_URL}/${recordId}`,{
+        //     method: "PATCH",
+        //     headers:{
+        //         Authorization: `Bearer ${TOKEN}`,
+        //         "Content-Type": "application/json"
+        //     },
+        //     body: JSON.stringify({fields})
+        // });
+        if(!response.ok){
+            throw new Error("Failed to delete discount");
+        }
+
+        const data = await response.json();
+        console.log("Successfully deleted discount:", data);
+
+        //remove from cache
+        cachedRecords = cachedRecords.filter(r => r.id !== recordId);
+
+        return data;
+    }catch(error){
+        console.error("Error in removeDiscount:", error);
+        throw error;
+    }
+}
+
+//global edit function
+window.editDiscount = function(recordId){
+    const card = document.querySelector(`[data-record-id="${recordId}"]`);
+    if(!card){
+        return;
+    }
+
+    const recordData = JSON.parse(card.dataset.recordData);
+
+    document.getElementById("title").value = recordData.Title || "";
+    document.getElementById("description").value = recordData.Description || "";
+    document.getElementById("url").value = recordData.URL || "";
+    document.getElementById("category").value = recordData.Category || "";
+    document.getElementById("tags").value = recordData.Tags || "";
+    document.getElementById("student-only").checked = recordData["Student Only"] || false;
+    document.getElementById("expires-at").value = recordData["Expires At"] || "";
+
+    document.getElementById("add-form").dataset.editingId = recordId;
+    document.querySelector("#form-modal h2").textContent = "Edit Discount";
+    document.querySelector("#add-form button[type='submit']").textContent = "Update Discount";
+    document.getElementById("form-modal").style.display = "block";
+}
+
+//global delete function
+window.deleteDiscount = async function(recordId, title){
+    if(!confirm(`Are you sure you want to delete "${title}"?`)){
+        return;
+    }
+
+    try{
+        await removeDiscount(recordId);
+        alert("Discount deleted successfully");
+        refreshDisplay();
+    }catch(error){
+        alert("Failed to delete discount: " + error.message);
+    }
+}
 document.addEventListener("DOMContentLoaded", function(){
     const modal = document.getElementById("form-modal");
     const showButton = document.getElementById("show-form-btn");
@@ -173,6 +322,10 @@ document.addEventListener("DOMContentLoaded", function(){
     if(closeButton){
         closeButton.addEventListener("click", function(){
             modal.style.display = "none";
+            //reset modal
+            delete document.getElementById("add-form").dataset.editingId;
+            document.querySelector("#form-modal h2").textContent = "Submit a Discount";
+            document.querySelector("#add-form button[type='submit']").textContent = "Submit Discount";
         });
     }
 
@@ -180,6 +333,10 @@ document.addEventListener("DOMContentLoaded", function(){
     window.addEventListener("click", function(event){
         if(event.target === modal){
             modal.style.display = "none";
+            //reset modal
+            delete document.getElementById("add-form").dataset.editingId;
+            document.querySelector("#form-modal h2").textContent = "Submit a Discount";
+            document.querySelector("#add-form button[type='submit']").textContent = "Submit Discount";
         }
     });
 
@@ -187,8 +344,8 @@ document.addEventListener("DOMContentLoaded", function(){
     const form = document.getElementById("add-form");
 
     if(form){
-        form.addEventListener("submit", async (e) =>{
-            e.preventDefault();
+        form.addEventListener("submit", async (event) =>{
+            event.preventDefault();
 
             //get the form values
             const title = document.getElementById("title").value.trim();
@@ -213,19 +370,27 @@ document.addEventListener("DOMContentLoaded", function(){
             }
 
             try{
-                //send discount to airtable
-                console.log("Sending to Airtable");
-                await addDiscount(title, description, url, category, tags, studentOnly, expiresAt);
+                const editingId = form.dataset.editingId;
 
-                showSuccess("Discount submitted successfully");
+                if(editingId){
+                    console.log("Updating discount");
+                    await updateDiscount(editingId, title, description, url, category, tags, studentOnly, expiresAt);
+                    showSuccess("Discount updated successfully, awaiting approval");
+                    delete form.dataset.editingId;
+                    refreshDisplay();
+                }else{
+                    console.log("Sending to Airtable");
+                    await addDiscount(title, description, url, category, tags, studentOnly, expiresAt);
+                    showSuccess("Discount submitted successfully, awaiting approval");
+                }
+
                 form.reset();
-
-                //refresh list
-                //await loadDiscounts();
 
                 //close the modal after 2 secs
                 setTimeout(() =>{
                     modal.style.display = "none";
+                    document.querySelector("#form-modal h2").textContent = "Submit a Discount";
+                    submitButton.textContent = "Submit Discount";
                 }, 2000);
 
             }catch(error){
@@ -235,7 +400,11 @@ document.addEventListener("DOMContentLoaded", function(){
                 //re enable the submit button
                 if(submitButton){
                     submitButton.disabled = false;
-                    submitButton.textContent = "Submit Discount";
+                    if(form.dataset.editingId){
+                        submitButton.textContent = "Update Discount";
+                    }else{
+                        submitButton.textContent = "Submit Discount";
+                    }
                 }
             }
         });
@@ -279,6 +448,7 @@ document.addEventListener("DOMContentLoaded", function(){
                 alert("Login successful");
                 updateAuthUI();
                 loginForm.reset();
+                refreshDisplay();
             }catch(error){
                 alert(error.message);
             }
@@ -310,6 +480,7 @@ document.addEventListener("DOMContentLoaded", function(){
             clearCurrentUser();
             alert("Logged out successfully");
             updateAuthUI();
+            refreshDisplay();
         });
     }
 });

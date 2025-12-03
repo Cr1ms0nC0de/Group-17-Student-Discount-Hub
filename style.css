@@ -359,4 +359,31 @@ footer {
         width: 95%;
         margin: 5% auto;
     }
+
+    /* Mobile search bar */
+    #searchInput {
+        width: 100%;
+        padding: 10px;
+        margin: 15px 0;
+    }
+}
+
+/* ======= ABDUL: Search Bar Styling (GLOBAL) ======= */
+
+#searchInput {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px 12px;
+    margin: 15px 0 20px 0;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+    display: block;
+}
+
+#searchInput:focus {
+    outline: none;
+    border-color: #004aad;
+    box-shadow: 0 0 4px rgba(0, 74, 173, 0.3);
 }

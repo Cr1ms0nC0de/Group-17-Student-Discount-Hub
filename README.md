@@ -52,3 +52,33 @@ This project demonstrates real world software engineering principles including:
 - User Submissions: Submit new deals for admin verification  
 - Admin Panel: Approve, edit, or remove discount listings  
 - Responsive Design: Works on mobile and desktop screens
+
+---
+
+## System Architecture
+The web application uses:
+- **Frontend:** HTML, CSS, JS  
+- **Backend/Database:** Airtable API  
+- **Hosting:** Netlify / Vercel (optional)  
+- **Version Control:** GitHub
+
+Data flows from Airtable → API calls (fetch) → dynamic rendering of discount cards.
+
+---
+
+## Tech Stack
+| Layer | Technology |
+|-------|------------|
+| Frontend | HTML5, CSS3, JavaScript |
+| Backend | Airtable REST API |
+| Authentication | Custom (Username + Password stored in Users table) |
+| Deployment | Netlify / Vercel |
+| Version Control | GitHub |
+
+---
+
+## Installation and Setup
+
+1. Clone the repository:
+```bash
+git clone https://github.com/Cr1ms0nC0de/Group-17-Student-Discount-Hub

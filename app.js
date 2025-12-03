@@ -9,6 +9,7 @@ const API_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${encodeURICompone
 const USER_API_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${encodeURIComponent(USER_TABLE)}`;
 
 let cachedRecords = [];
+
 // ======== FUNCTIONS ========
 
 // Show a temporary loading message
@@ -21,7 +22,7 @@ function showLoading() {
 function showError(message) {
     const container = document.getElementById("discount-list");
     container.innerHTML = `<p class='placeholder error'>⚠️ ${message}</p>`;
-    if(window.showToast){
+    if (window.showToast) {
         window.showToast("error", "Failed to load", message);
     }
 }
@@ -79,17 +80,13 @@ function displayDiscounts(records) {
     `;
         container.appendChild(card);
     });
-    // === ABDUL: wire up the detail popup AFTER cards exist in the DOM ===
 
-    //commented out for now due to it not being neccessary in its current form, it shows exact same info as discount display but without the clean ui.
-
+    // detail popup logic was commented out by group; leaving it as-is
     // try {
     //     const cards = Array.from(container.querySelectorAll(".discount-card"));
     //     if (window.attachDetailHandlers && cards.length) {
-    //         // Pass the same records array we just rendered
     //         window.attachDetailHandlers(cards, records);
     //     }
-    //     // Optional toast (only if helper exists)
     //     if (window.showToast) {
     //         window.showToast("success", "Loaded", "Discounts updated.");
     //     }
@@ -112,43 +109,50 @@ async function loadDiscounts() {
         }
 
         const data = await res.json();
-        const validRecords = data.records.filter(r => r.fields.Title && r.fields.Title.trim() !== "" && r.fields.Approved === true && r.fields["Current Status"] !== "Expired");
-        cachedRecords = validRecords; //store discounts in memory
+        const validRecords = data.records.filter(
+            r =>
+                r.fields.Title &&
+                r.fields.Title.trim() !== "" &&
+                r.fields.Approved === true &&
+                r.fields["Current Status"] !== "Expired"
+        );
+
+        cachedRecords = validRecords; // store discounts in memory for search/filter
         displayDiscounts(validRecords);
     } catch (error) {
         console.error("Error fetching data:", error);
         showError("Failed to load discounts. Please try again later.");
-    }finally{
-        //hide loading spinner, was causing issues when loaded multiple times.
-        if(window.hideLoading){
+    } finally {
+        // hide loading spinner
+        if (window.hideLoading) {
             window.hideLoading();
         }
     }
 }
 
-//refresh discounts without calling api
-function refreshDisplay(){
+// refresh discounts without calling api
+function refreshDisplay() {
     displayDiscounts(cachedRecords);
 }
 
-//show the success message
-function showSuccess(message){
+// show the success message
+function showSuccess(message) {
     const msg = document.getElementById("success-message");
-    if(msg){
+    if (msg) {
         msg.textContent = message;
         msg.style.display = "block";
-        setTimeout(() =>{
+        setTimeout(() => {
             msg.style.display = "none";
         }, 4000);
     }
 }
 
-//add a new discount to Airtable
-async function addDiscount(title, description, url, category, tags, studentOnly, expiresAt){
-    console.log("Attempting to send new Discount to Airtable:", {title, description});
-    try{
+// add a new discount to Airtable
+async function addDiscount(title, description, url, category, tags, studentOnly, expiresAt) {
+    console.log("Attempting to send new Discount to Airtable:", { title, description });
+    try {
         const currentUser = getCurrentUser();
-        const fields={
+        const fields = {
             Title: title,
             Description: description,
             URL: url,
@@ -160,18 +164,18 @@ async function addDiscount(title, description, url, category, tags, studentOnly,
         };
         console.log("Sending these fields:", fields);
 
-        const response = await fetch(API_URL,{
+        const response = await fetch(API_URL, {
             method: "POST",
-            headers:{
+            headers: {
                 Authorization: `Bearer ${TOKEN}`,
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({fields})
+            body: JSON.stringify({ fields })
         });
         const responseText = await response.text();
         console.log("Airtable response:", responseText);
 
-        if(!response.ok){
+        if (!response.ok) {
             console.error("Airtable error response:", responseText);
             throw new Error(`Airtable error ${response.status}: ${responseText}`);
         }
@@ -179,17 +183,17 @@ async function addDiscount(title, description, url, category, tags, studentOnly,
         const data = JSON.parse(responseText);
         console.log("Successfully added new discount to Airtable:", data);
         return data;
-    }catch(error){
+    } catch (error) {
         console.error("Error in addDiscount:", error);
         throw error;
     }
 }
 
-//update existing discount
-async function updateDiscount(recordId, title, description, url, category, tags, studentOnly, expiresAt){
+// update existing discount
+async function updateDiscount(recordId, title, description, url, category, tags, studentOnly, expiresAt) {
     console.log("Attempting to update discount:", recordId);
-    try{
-        const fields={
+    try {
+        const fields = {
             Title: title,
             Description: description,
             URL: url,
@@ -200,16 +204,16 @@ async function updateDiscount(recordId, title, description, url, category, tags,
             "Approved": false
         };
 
-        const response = await fetch(`${API_URL}/${recordId}`,{
+        const response = await fetch(`${API_URL}/${recordId}`, {
             method: "PATCH",
-            headers:{
+            headers: {
                 Authorization: `Bearer ${TOKEN}`,
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({fields})
+            body: JSON.stringify({ fields })
         });
 
-        if(!response.ok){
+        if (!response.ok) {
             const errorText = await response.text();
             console.error("Update error:", errorText);
             throw new Error("Failed to update discount");
@@ -218,61 +222,59 @@ async function updateDiscount(recordId, title, description, url, category, tags,
         const data = await response.json();
         console.log("Successfully updated discount:", data);
 
-        //remove from cache
+        // remove from cache
         cachedRecords = cachedRecords.filter(r => r.id !== recordId);
 
         return data;
-    }catch(error){
+    } catch (error) {
         console.error("Error in updateDiscount:", error);
         throw error;
     }
 }
 
-//delete discount
-async function removeDiscount(recordId){
+// delete discount
+async function removeDiscount(recordId) {
     console.log("Attempting to delete discount:", recordId);
-    try{
-        const response = await fetch(`${API_URL}/${recordId}`,{
+    try {
+        const response = await fetch(`${API_URL}/${recordId}`, {
             method: "DELETE",
-            headers:{
+            headers: {
                 Authorization: `Bearer ${TOKEN}`
             }
         });
-        //Set Approved to false instead of deleting
 
-        // const fields ={
-        //     "Approved": false
-        // };
-        //
-        // const response = await fetch(`${API_URL}/${recordId}`,{
-        //     method: "PATCH",
-        //     headers:{
-        //         Authorization: `Bearer ${TOKEN}`,
-        //         "Content-Type": "application/json"
-        //     },
-        //     body: JSON.stringify({fields})
+        // alternative: set Approved to false instead of deleting (left as comments by group)
+        // const fields = { "Approved": false };
+        // const response = await fetch(`${API_URL}/${recordId}`, {
+        //   method: "PATCH",
+        //   headers: {
+        //     Authorization: `Bearer ${TOKEN}`,
+        //     "Content-Type": "application/json"
+        //   },
+        //   body: JSON.stringify({ fields })
         // });
-        if(!response.ok){
+
+        if (!response.ok) {
             throw new Error("Failed to delete discount");
         }
 
         const data = await response.json();
         console.log("Successfully deleted discount:", data);
 
-        //remove from cache
+        // remove from cache
         cachedRecords = cachedRecords.filter(r => r.id !== recordId);
 
         return data;
-    }catch(error){
+    } catch (error) {
         console.error("Error in removeDiscount:", error);
         throw error;
     }
 }
 
-//global edit function
-window.editDiscount = function(recordId){
+// global edit function
+window.editDiscount = function (recordId) {
     const card = document.querySelector(`[data-record-id="${recordId}"]`);
-    if(!card){
+    if (!card) {
         return;
     }
 
@@ -292,62 +294,63 @@ window.editDiscount = function(recordId){
     document.getElementById("form-modal").style.display = "block";
 }
 
-//global delete function
-window.deleteDiscount = async function(recordId, title){
-    if(!confirm(`Are you sure you want to delete "${title}"?`)){
+// global delete function
+window.deleteDiscount = async function (recordId, title) {
+    if (!confirm(`Are you sure you want to delete "${title}"?`)) {
         return;
     }
 
-    try{
+    try {
         await removeDiscount(recordId);
         alert("Discount deleted successfully");
         refreshDisplay();
-    }catch(error){
+    } catch (error) {
         alert("Failed to delete discount: " + error.message);
     }
 }
-document.addEventListener("DOMContentLoaded", function(){
+
+document.addEventListener("DOMContentLoaded", function () {
     const modal = document.getElementById("form-modal");
     const showButton = document.getElementById("show-form-btn");
     const closeButton = document.querySelector(".close-modal");
 
-    //show the modal when the button is clicked
-    if(showButton){
-        showButton.addEventListener("click", function(){
+    // show the modal when the button is clicked
+    if (showButton) {
+        showButton.addEventListener("click", function () {
             modal.style.display = "block";
         });
     }
 
-    //close the modal when X is clicked
-    if(closeButton){
-        closeButton.addEventListener("click", function(){
+    // close the modal when X is clicked
+    if (closeButton) {
+        closeButton.addEventListener("click", function () {
             modal.style.display = "none";
-            //reset modal
+            // reset modal
             delete document.getElementById("add-form").dataset.editingId;
             document.querySelector("#form-modal h2").textContent = "Submit a Discount";
             document.querySelector("#add-form button[type='submit']").textContent = "Submit Discount";
         });
     }
 
-    //close the modal when clicking outside of it
-    window.addEventListener("click", function(event){
-        if(event.target === modal){
+    // close the modal when clicking outside of it
+    window.addEventListener("click", function (event) {
+        if (event.target === modal) {
             modal.style.display = "none";
-            //reset modal
+            // reset modal
             delete document.getElementById("add-form").dataset.editingId;
             document.querySelector("#form-modal h2").textContent = "Submit a Discount";
             document.querySelector("#add-form button[type='submit']").textContent = "Submit Discount";
         }
     });
 
-    //submission handler
+    // submission handler
     const form = document.getElementById("add-form");
 
-    if(form){
-        form.addEventListener("submit", async (event) =>{
+    if (form) {
+        form.addEventListener("submit", async (event) => {
             event.preventDefault();
 
-            //get the form values
+            // get the form values
             const title = document.getElementById("title").value.trim();
             const description = document.getElementById("description").value.trim();
             const url = document.getElementById("url").value.trim();
@@ -356,29 +359,29 @@ document.addEventListener("DOMContentLoaded", function(){
             const studentOnly = document.getElementById("student-only").checked;
             const expiresAt = document.getElementById("expires-at").value;
 
-            //simple validation
-            if(!title || !description || !url || !category || !tags || !expiresAt){
+            // simple validation
+            if (!title || !description || !url || !category || !tags || !expiresAt) {
                 alert("Please fill in all fields");
                 return;
             }
 
-            //disable the submit button
+            // disable the submit button
             const submitButton = form.querySelector('button[type="submit"]');
-            if(submitButton){
+            if (submitButton) {
                 submitButton.disabled = true;
                 submitButton.textContent = "Submitting";
             }
 
-            try{
+            try {
                 const editingId = form.dataset.editingId;
 
-                if(editingId){
+                if (editingId) {
                     console.log("Updating discount");
                     await updateDiscount(editingId, title, description, url, category, tags, studentOnly, expiresAt);
                     showSuccess("Discount updated successfully, awaiting approval");
                     delete form.dataset.editingId;
                     refreshDisplay();
-                }else{
+                } else {
                     console.log("Sending to Airtable");
                     await addDiscount(title, description, url, category, tags, studentOnly, expiresAt);
                     showSuccess("Discount submitted successfully, awaiting approval");
@@ -386,200 +389,244 @@ document.addEventListener("DOMContentLoaded", function(){
 
                 form.reset();
 
-                //close the modal after 2 secs
-                setTimeout(() =>{
+                // close the modal after 2 secs
+                setTimeout(() => {
                     modal.style.display = "none";
                     document.querySelector("#form-modal h2").textContent = "Submit a Discount";
-                    submitButton.textContent = "Submit Discount";
+                    if (submitButton) submitButton.textContent = "Submit Discount";
                 }, 2000);
 
-            }catch(error){
+            } catch (error) {
                 console.error("Error:", error);
                 alert("Failed to submit discount: " + error.message);
-            }finally{
-                //re enable the submit button
-                if(submitButton){
+            } finally {
+                // re-enable the submit button
+                if (submitButton) {
                     submitButton.disabled = false;
-                    if(form.dataset.editingId){
+                    if (form.dataset.editingId) {
                         submitButton.textContent = "Update Discount";
-                    }else{
+                    } else {
                         submitButton.textContent = "Submit Discount";
                     }
                 }
             }
         });
     }
-    //Login stuff
+
+    // Login stuff
     updateAuthUI();
 
-    //handlers
+    // handlers
     const loginForm = document.getElementById("login-form");
     const registerForm = document.getElementById("register-form");
     const showRegisterButton = document.getElementById("show-register");
     const showLoginButton = document.getElementById("show-login");
     const logoutButton = document.getElementById("logout-btn");
 
-    if(showRegisterButton){
-        showRegisterButton.addEventListener("click", function(){
+    if (showRegisterButton) {
+        showRegisterButton.addEventListener("click", function () {
             document.getElementById("login-box").style.display = "none";
             document.getElementById("register-box").style.display = "block";
         });
     }
-    if(showLoginButton){
-        showLoginButton.addEventListener("click", function(){
+    if (showLoginButton) {
+        showLoginButton.addEventListener("click", function () {
             document.getElementById("register-box").style.display = "none";
             document.getElementById("login-box").style.display = "block";
         });
     }
-    if(loginForm){
-        loginForm.addEventListener("submit", async(event)=>{
+    if (loginForm) {
+        loginForm.addEventListener("submit", async (event) => {
             event.preventDefault();
             const username = document.getElementById("login-username").value.trim();
             const password = document.getElementById("login-password").value.trim();
 
-            if(!username || !password){
+            if (!username || !password) {
                 alert("Please fill in all fields");
                 return;
             }
 
-            try{
+            try {
                 await loginUser(username, password);
                 setCurrentUser(username);
                 alert("Login successful");
                 updateAuthUI();
                 loginForm.reset();
                 refreshDisplay();
-            }catch(error){
+            } catch (error) {
                 alert(error.message);
             }
         });
     }
-    if(registerForm){
-        registerForm.addEventListener("submit", async(event)=>{
+    if (registerForm) {
+        registerForm.addEventListener("submit", async (event) => {
             event.preventDefault();
             const username = document.getElementById("register-username").value.trim();
             const password = document.getElementById("register-password").value.trim();
 
-            if(!username || !password){
+            if (!username || !password) {
                 alert("Please fill in all fields");
                 return;
             }
-            try{
+            try {
                 await registerUser(username, password);
                 alert("Registration successful! Please login.");
                 document.getElementById("register-box").style.display = "none";
                 document.getElementById("login-box").style.display = "block";
                 registerForm.reset();
-            }catch(error){
+            } catch (error) {
                 alert(error.message);
             }
         });
     }
-    if(logoutButton){
-        logoutButton.addEventListener("click", function(){
+    if (logoutButton) {
+        logoutButton.addEventListener("click", function () {
             clearCurrentUser();
             alert("Logged out successfully");
             updateAuthUI();
             refreshDisplay();
         });
     }
+
+    // ===== Search bar (Abdul) =====
+    const searchInput = document.getElementById("searchInput");
+    if (searchInput) {
+        searchInput.addEventListener("input", () => {
+            const q = searchInput.value.trim().toLowerCase();
+
+            // If empty, show all cached discounts
+            if (q === "") {
+                displayDiscounts(cachedRecords);
+                return;
+            }
+
+            // Filter locally using already-fetched records
+            const filtered = cachedRecords.filter(rec => {
+                const f = rec.fields || {};
+                const title       = (f.Title || "").toLowerCase();
+                const description = (f.Description || "").toLowerCase();
+                const category    = (f.Category || "").toLowerCase();
+                const tags        = (f.Tags || "").toLowerCase();
+
+                return (
+                    title.includes(q) ||
+                    description.includes(q) ||
+                    category.includes(q) ||
+                    tags.includes(q)
+                );
+            });
+
+            displayDiscounts(filtered);
+        });
+    }
 });
-//session functions
-function setCurrentUser(username){
+
+// session functions
+function setCurrentUser(username) {
     localStorage.setItem("currentUser", username);
 }
-function getCurrentUser(){
+function getCurrentUser() {
     return localStorage.getItem("currentUser");
 }
-function clearCurrentUser(){
+function clearCurrentUser() {
     localStorage.removeItem("currentUser");
 }
-function isLoggedIn(){
+function isLoggedIn() {
     return getCurrentUser() !== null;
 }
-//user login functions
-async function registerUser(username, password){
-    try{
-        //check if user already exists
-        const checkUser = await fetch(`${USER_API_URL}?filterByFormula={Username}='${username}'`, {headers: {Authorization: `Bearer ${TOKEN}`}});
-        if(!checkUser.ok){
+
+// user login functions
+async function registerUser(username, password) {
+    try {
+        // check if user already exists
+        const checkUser = await fetch(
+            `${USER_API_URL}?filterByFormula={Username}='${username}'`,
+            { headers: { Authorization: `Bearer ${TOKEN}` } }
+        );
+        if (!checkUser.ok) {
             throw new Error("Failed to check existing users");
         }
 
         const checkData = await checkUser.json();
 
-        if(checkData.records.length > 0){
+        if (checkData.records.length > 0) {
             throw new Error("Username already exists");
         }
 
-        const fields ={
+        const fields = {
             Username: username,
             Password: password
         };
 
-        const response = await fetch(USER_API_URL,{
+        const response = await fetch(USER_API_URL, {
             method: "POST",
-            headers:{
+            headers: {
                 Authorization: `Bearer ${TOKEN}`,
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({fields})
+            body: JSON.stringify({ fields })
         });
-        if(!response.ok){
+        if (!response.ok) {
             throw new Error("Failed to register");
         }
         const data = await response.json();
         console.log("User registered:", data);
         return data;
-    }catch(error){
+    } catch (error) {
         console.error("Error in registerUser:", error);
         throw error;
     }
 }
-async function loginUser(username, password){
-    try{
-        const checkUser = await fetch(`${USER_API_URL}?filterByFormula={Username}='${username}'`, {headers: {Authorization: `Bearer ${TOKEN}`}});
+
+async function loginUser(username, password) {
+    try {
+        const checkUser = await fetch(
+            `${USER_API_URL}?filterByFormula={Username}='${username}'`,
+            { headers: { Authorization: `Bearer ${TOKEN}` } }
+        );
         const data = await checkUser.json();
 
-        //check if username exists
-        if(data.records.length === 0){
+        // check if username exists
+        if (data.records.length === 0) {
             throw new Error("Username not found");
         }
 
-        //check if password is correct
-        if(data.records[0].fields.Password !== password){
+        // check if password is correct
+        if (data.records[0].fields.Password !== password) {
             throw new Error("Wrong password");
         }
         return data.records[0];
-    }catch(error){
+    } catch (error) {
         console.error("Error in loginUser:", error);
         throw error;
     }
 }
-//update UI
-function updateAuthUI(){
+
+// update UI
+function updateAuthUI() {
     const authSection = document.getElementById("auth-section");
     const submitButton = document.getElementById("show-form-btn");
     const logoutButton = document.getElementById("logout-btn");
 
-    if(isLoggedIn()){
+    if (isLoggedIn()) {
         authSection.style.display = "none";
-        if(submitButton){
+        if (submitButton) {
             submitButton.style.display = "inline-block";
         }
-        if(logoutButton){
+        if (logoutButton) {
             logoutButton.style.display = "inline-block";
             logoutButton.textContent = `Logout (${getCurrentUser()})`;
         }
-    }else{
+    } else {
         authSection.style.display = "block";
-        if(submitButton){
+        if (submitButton) {
             submitButton.style.display = "none";
         }
-        if(logoutButton){
+        if (logoutButton) {
             logoutButton.style.display = "none";
         }
     }
 }
+
 // ======== INIT ========
 loadDiscounts();

@@ -347,6 +347,42 @@ footer {
     margin-top: 10px;
 }
 
+/* ===== Category Filter Bar ===== */
+
+.filter-bar {
+    margin: 12px auto 20px;
+    max-width: 800px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+}
+
+.filter-btn {
+    border: none;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: #e6efff;
+    color: #004aad;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    white-space: nowrap;
+}
+
+.filter-btn:hover {
+    background: #d0e0ff;
+}
+
+.filter-btn.active {
+    background: #004aad;
+    color: #ffffff;
+    box-shadow: 0 0 10px rgba(0, 74, 173, 0.7);
+}
+
 /* ===== Responsive Design ===== */
 
 @media (max-width: 768px) {

@@ -96,6 +96,9 @@ function displayDiscounts(records) {
     // } catch (e) {
     //     console.warn("ABDUL: detail view not wired:", e);
     // }
+
+    //reattach filter buttons after refresh
+    wireFilters();
 }
 
 // Load data from Airtable
@@ -306,6 +309,35 @@ window.deleteDiscount = async function(recordId, title){
         alert("Failed to delete discount: " + error.message);
     }
 }
+
+//filter button logic
+function wireFilters(){
+    const filterBar = document.querySelector(".filter-bar");
+    if(!filterBar){
+        return;
+    }
+
+    const buttons = filterBar.querySelectorAll(".filter-btn");
+
+    buttons.forEach(btn => {
+        btn.onclick = () => {
+            const category = btn.dataset.category;
+
+            //highlight active button
+            buttons.forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+
+            //apply filter
+            if(category === "All"){
+                displayDiscounts(cachedRecords);
+            }else{
+                const filtered = cachedRecords.filter(r => r.fields.Category === category);
+                displayDiscounts(filtered);
+            }
+        };
+    });
+}
+
 document.addEventListener("DOMContentLoaded", function(){
     const modal = document.getElementById("form-modal");
     const showButton = document.getElementById("show-form-btn");

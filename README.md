@@ -45,10 +45,58 @@ This project demonstrates real world software engineering principles including:
 ---
 
 ## Features
-- User Authentication: Register or log in using a .edu email  
-- Discount Directory: Browse discounts by category, store, or location  
+- User Authentication: Register or log in using a username and password
+- Discount Directory: Browse discounts by category
 - Search and Filter: Find deals based on keywords or type such as food or tech  
-- Favorites System: Save discounts for quick access  
 - User Submissions: Submit new deals for admin verification  
-- Admin Panel: Approve, edit, or remove discount listings  
+- User Editing: Users can edit and delete their own submitted discounts
+- Admin Panel: Approve, edit, or remove discount listings in Airtable (edit and remove in the application itself)
 - Responsive Design: Works on mobile and desktop screens
+
+---
+
+## System Architecture
+The web application uses:
+- **Frontend:** HTML, CSS, JS  
+- **Backend/Database:** Airtable API  
+- **Hosting:** Netlify / Vercel (optional)  
+- **Version Control:** GitHub
+
+Data flows from Airtable → API calls (fetch) → dynamic rendering of discount cards.
+
+---
+
+## Tech Stack
+| Layer | Technology |
+|-------|------------|
+| Frontend | HTML5, CSS3, JavaScript |
+| Backend | Airtable REST API |
+| Authentication | Custom (Username + Password stored in Users table) |
+| Deployment | Netlify / Vercel |
+| Version Control | GitHub |
+
+---
+
+# Student Discount Hub
+
+A web application that helps students find discounts and deals available to them. This project was developed by Group 17.
+
+## Features
+
+- Browse a list of student discounts by category.
+- Search for discounts by store or type.
+- User-friendly interface for easy navigation.
+
+## Installation and Setup
+
+### Method 1: GitHub Pages
+
+1. Open https://cr1ms0nc0de.github.io/Group-17-Student-Discount-Hub/
+
+### Method 2: Cloning
+
+1. Clone the repository:
+```bash
+git clone https://github.com/Cr1ms0nC0de/Group-17-Student-Discount-Hub
+```
+2. Open index.html

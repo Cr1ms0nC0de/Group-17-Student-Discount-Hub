@@ -9,6 +9,7 @@ const API_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${encodeURICompone
 const USER_API_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${encodeURIComponent(USER_TABLE)}`;
 
 let cachedRecords = [];
+let currentFilterCategory = "All"; // track active filter for search integration
 // ======== FUNCTIONS ========
 
 // Show a temporary loading message
@@ -322,10 +323,17 @@ function wireFilters(){
     buttons.forEach(btn => {
         btn.onclick = () => {
             const category = btn.dataset.category;
+            currentFilterCategory = category; // track current filter
 
             //highlight active button
             buttons.forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
+
+            //clear search input when filter is clicked
+            const searchInput = document.getElementById("searchInput");
+            if(searchInput){
+                searchInput.value = "";
+            }
 
             //apply filter
             if(category === "All"){
@@ -336,6 +344,38 @@ function wireFilters(){
             }
         };
     });
+}
+
+//apply both search and filter together
+function applySearchAndFilter(){
+    const searchInput = document.getElementById("searchInput");
+    const query = searchInput ? searchInput.value.trim().toLowerCase() : "";
+
+    //start with filter
+    let filtered = cachedRecords;
+    if(currentFilterCategory !== "All"){
+        filtered = filtered.filter(r => r.fields.Category === currentFilterCategory);
+    }
+
+    //then apply search on filtered results
+    if(query !== ""){
+        filtered = filtered.filter(rec => {
+            const f = rec.fields || {};
+            const title = (f.Title || "").toLowerCase();
+            const description = (f.Description || "").toLowerCase();
+            const category = (f.Category || "").toLowerCase();
+            const tags = (f.Tags || "").toLowerCase();
+
+            return (
+                title.includes(query) ||
+                description.includes(query) ||
+                category.includes(query) ||
+                tags.includes(query)
+            );
+        });
+    }
+
+    displayDiscounts(filtered);
 }
 
 document.addEventListener("DOMContentLoaded", function(){
@@ -514,6 +554,12 @@ document.addEventListener("DOMContentLoaded", function(){
             updateAuthUI();
             refreshDisplay();
         });
+    }
+
+    //search bar functionality (works with filters)
+    const searchInput = document.getElementById("searchInput");
+    if(searchInput){
+        searchInput.addEventListener("input", applySearchAndFilter);
     }
 });
 //session functions

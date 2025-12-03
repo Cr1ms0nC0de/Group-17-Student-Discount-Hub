@@ -347,10 +347,29 @@ footer {
     margin-top: 10px;
 }
 
+/* ===== Search Bar ===== */
+
+#searchInput {
+    width: 100%;
+    padding: 12px 16px;
+    margin: 0 0 15px 0;
+    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+    font-size: 1em;
+    box-sizing: border-box;
+    transition: border-color 0.3s;
+}
+
+#searchInput:focus {
+    outline: none;
+    border-color: #004aad;
+    box-shadow: 0 0 6px rgba(0, 74, 173, 0.3);
+}
+
 /* ===== Category Filter Bar ===== */
 
 .filter-bar {
-    margin: 12px auto 20px;
+    margin: 0 auto 20px;
     max-width: 800px;
     display: flex;
     flex-wrap: wrap;
@@ -394,5 +413,9 @@ footer {
     .modal-content {
         width: 95%;
         margin: 5% auto;
+    }
+
+    #searchInput {
+        font-size: 0.95em;
     }
 }

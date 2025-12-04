@@ -9,6 +9,7 @@ const API_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${encodeURICompone
 const USER_API_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${encodeURIComponent(USER_TABLE)}`;
 
 let cachedRecords = [];
+let reportTargetTitle = "";
 let currentFilterCategory = "All"; // track active filter for search integration
 // ======== FUNCTIONS ========
 
@@ -75,9 +76,17 @@ function displayDiscounts(records) {
         <strong>Status:</strong> <span class="status ${status.toLowerCase()}">${status}</span>
       </p>
       <div class="tags">${tags}</div>
-      <p class="offer-link">${url}</p>
-      ${editDeleteButtons}
+      <div class="card-footer">
+        <div class="footer-left">
+          <a href="${d.URL}" target="_blank" class="offer-link">View Offer</a>        </div>
+        <div class="footer-right">
+          ${editDeleteButtons}
+          <button class="report-btn" onclick="openReportModal('${title.replace(/'/g, "\\'")}')">Report</button>
+        </div>
+      </div>
     `;
+
+
         container.appendChild(card);
     });
     // === ABDUL: wire up the detail popup AFTER cards exist in the DOM ===
@@ -232,6 +241,40 @@ async function updateDiscount(recordId, title, description, url, category, tags,
     }
 }
 
+async function submitReport() {
+    const reason = document.getElementById("reportReason").value;
+    const comment = document.getElementById("reportComment").value;
+    const username = getCurrentUser() || "Anonymous";
+
+    const payload = {
+        fields: {
+            "Reported Discount": reportTargetTitle,
+            "Reported By": username,
+            "Reason": reason,
+            "Comment": comment
+        }
+    };
+
+    try {
+        const res = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE}/Reports`, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${TOKEN}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error("Failed to submit report");
+
+        alert("Report submitted successfully!");
+        closeReportModal();
+    } catch (err) {
+        console.error(err);
+        alert("Failed to submit report.");
+    }
+}
+
 //delete discount
 async function removeDiscount(recordId){
     console.log("Attempting to delete discount:", recordId);
@@ -294,6 +337,35 @@ window.editDiscount = function(recordId){
     document.querySelector("#form-modal h2").textContent = "Edit Discount";
     document.querySelector("#add-form button[type='submit']").textContent = "Update Discount";
     document.getElementById("form-modal").style.display = "block";
+}
+
+function openReportModal(title) {
+    reportTargetTitle = title;
+    document.getElementById("reportingTitle").innerText = `Reporting: ${title}`;
+
+    // reset fields
+    const reasonEl = document.getElementById("reportReason");
+    const commentEl = document.getElementById("reportComment");
+    if (reasonEl) reasonEl.value = "Expired";
+    if (commentEl) commentEl.value = "";
+
+    const overlay = document.getElementById("detail-overlay");
+    const detailCard = document.getElementById("detail-card");
+    const reportModal = document.getElementById("reportModal");
+
+    if (detailCard) detailCard.style.display = "none";   // hide detail card
+    if (overlay) overlay.style.display = "flex";         // show dark overlay
+    if (reportModal) reportModal.style.display = "block";// show report modal
+}
+
+function closeReportModal() {
+    const overlay = document.getElementById("detail-overlay");
+    const detailCard = document.getElementById("detail-card");
+    const reportModal = document.getElementById("reportModal");
+
+    if (reportModal) reportModal.style.display = "none";
+    if (detailCard) detailCard.style.display = "block";
+    if (overlay) overlay.style.display = "none";
 }
 
 //global delete function

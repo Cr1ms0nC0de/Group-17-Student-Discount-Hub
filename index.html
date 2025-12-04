@@ -200,8 +200,34 @@
     <div class="spinner"></div>
 </div>
 
-<!-- Discount detail modal (hidden until a card is clicked) -->
-<div id="detail-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); align-items:center; justify-content:center; z-index:9997;">
+<!-- Report discount modal -->
+<div id="reportModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeReportModal()">&times;</span>
+        <h2>Report Discount</h2>
+        <p id="reportingTitle" class="placeholder"></p>
+
+        <form class="discount-form" onsubmit="event.preventDefault(); submitReport();">
+            <div class="form-group">
+                <label for="reportReason">Reason *</label>
+                <select id="reportReason" required>
+                    <option value="Expired">Expired</option>
+                    <option value="Incorrect Information">Incorrect Information</option>
+                    <option value="Broken Link">Broken Link</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="reportComment">Additional Comments (optional)</label>
+                <textarea id="reportComment" placeholder="Describe the issue..."></textarea>
+            </div>
+
+            <button type="submit" class="btn-submit">Submit Report</button>
+        </form>
+    </div>
+</div>
+    <!-- Discount detail modal (hidden until a card is clicked) disabled by Caleb
     <div id="detail-card" class="card" style="max-width:720px; margin:0 16px; max-height:80vh; overflow:auto;">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
             <h2 id="detail-title" style="margin:0;">Discount</h2>
@@ -216,6 +242,7 @@
             <div><strong>Expires</strong><div id="detail-expires"></div></div>
         </div>
     </div>
+    -->
 </div>
 
 <!-- Abdul helper functions (inline, small, and theme-safe) -->

@@ -95,7 +95,7 @@ footer {
     margin-right: 5px;
 }
 
-.offer-link a {
+.offer-link {
     display: inline-block;
     margin-top: 10px;
     text-decoration: none;
@@ -106,7 +106,7 @@ footer {
     transition: background 0.2s;
 }
 
-.offer-link a:hover {
+.offer-link:hover {
     background: #1e7e34;
 }
 
@@ -118,6 +118,46 @@ footer {
     margin-top: 12px;
     display: flex;
     gap: 8px;
+}
+
+.card-footer {
+    margin-top: 12px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.footer-right {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.card-footer .card-actions {
+    margin-top: 0;
+}
+
+.card-footer a.offer-link,
+.card-footer button {
+    display: inline-block;
+    padding: 6px 12px;
+}
+
+/* Report button in footer */
+.card-footer .report-btn {
+    border-radius: 4px;
+    border: none;
+    background: #ff4d4d;
+    color: #fff;
+    font-size: 0.85em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.card-footer .report-btn:hover {
+    background: #e63939;
 }
 
 .btn-edit, .btn-delete {

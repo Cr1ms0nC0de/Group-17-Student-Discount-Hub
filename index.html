@@ -203,9 +203,9 @@
 <!-- Report discount modal -->
 <div id="reportModal" class="modal">
     <div class="modal-content">
-        <span class="close" onclick="closeReportModal()">&times;</span>
+        <span class="close-modal" onclick="closeReportModal()">&times;</span>
         <h2>Report Discount</h2>
-        <p id="reportingTitle" class="placeholder"></p>
+        <p id="reportingTitle" class="placeholder" style="margin-bottom: 20px;"></p>
 
         <form class="discount-form" onsubmit="event.preventDefault(); submitReport();">
             <div class="form-group">
@@ -223,7 +223,7 @@
                 <textarea id="reportComment" placeholder="Describe the issue..."></textarea>
             </div>
 
-            <button type="submit" class="btn-submit">Submit Report</button>
+            <button type="submit" class="btn-submit" style="width: 100%; margin-top: 10px;">Submit Report</button>
         </form>
     </div>
 </div>

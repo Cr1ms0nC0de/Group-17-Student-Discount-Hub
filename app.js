@@ -341,7 +341,10 @@ window.editDiscount = function(recordId){
 
 function openReportModal(title) {
     reportTargetTitle = title;
-    document.getElementById("reportingTitle").innerText = `Reporting: ${title}`;
+    const titleEl = document.getElementById("reportingTitle");
+    if(titleEl){
+        titleEl.innerText = `Reporting: ${title}`;
+    }
 
     // reset fields
     const reasonEl = document.getElementById("reportReason");
@@ -349,24 +352,36 @@ function openReportModal(title) {
     if (reasonEl) reasonEl.value = "Expired";
     if (commentEl) commentEl.value = "";
 
-    const overlay = document.getElementById("detail-overlay");
-    const detailCard = document.getElementById("detail-card");
     const reportModal = document.getElementById("reportModal");
-
-    if (detailCard) detailCard.style.display = "none";   // hide detail card
-    if (overlay) overlay.style.display = "flex";         // show dark overlay
-    if (reportModal) reportModal.style.display = "block";// show report modal
+    if(reportModal){
+        reportModal.style.display = "block";
+    }
 }
 
 function closeReportModal() {
-    const overlay = document.getElementById("detail-overlay");
-    const detailCard = document.getElementById("detail-card");
     const reportModal = document.getElementById("reportModal");
-
-    if (reportModal) reportModal.style.display = "none";
-    if (detailCard) detailCard.style.display = "block";
-    if (overlay) overlay.style.display = "none";
+    if(reportModal){
+        reportModal.style.display = "none";
+    }
 }
+
+//clicking outside report modal closes it
+window.addEventListener("click", function(event){
+    const reportModal = document.getElementById("reportModal");
+    const formModal = document.getElementById("form-modal");
+
+    if(event.target === formModal){
+        formModal.style.display = "none";
+        delete document.getElementById("add-form").dataset.editingId;
+        document.querySelector("#form-modal h2").textContent = "Submit a Discount";
+        document.querySelector("#add-form button[type='submit']").textContent = "Submit Discount";
+    }
+
+    //close display
+    if(event.target === reportModal){
+        reportModal.style.display = "none";
+    }
+});
 
 //global delete function
 window.deleteDiscount = async function(recordId, title){
